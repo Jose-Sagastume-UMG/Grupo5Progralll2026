@@ -4,6 +4,7 @@
 package miumg.edu.gt.nodesheet;
 
 import javax.swing.JFrame;
+import miumg.edu.gt.nodesheet.View.Libro;
 import miumg.edu.gt.nodesheet.View.SplashScreen;
 import miumg.edu.gt.nodesheet.View.login;
 
@@ -34,7 +35,7 @@ public class NodeSheet {
 
         splashFrame.dispose(); // cerrar splash
 
-        login log = new login();
-        log.setVisible(true);
+        Libro book = new Libro();
+        book.setVisible(true);
     }
 }
