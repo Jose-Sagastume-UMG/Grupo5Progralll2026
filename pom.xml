@@ -10,4 +10,11 @@
         <maven.compiler.release>17</maven.compiler.release>
         <exec.mainClass>miumg.edu.gt.nodesheet.NodeSheet</exec.mainClass>
     </properties>
+   <dependencies>
+        <dependency>
+            <groupId>com.jtattoo</groupId>
+            <artifactId>JTattoo</artifactId>
+            <version>1.6.13</version>
+        </dependency>
+    </dependencies>
 </project>

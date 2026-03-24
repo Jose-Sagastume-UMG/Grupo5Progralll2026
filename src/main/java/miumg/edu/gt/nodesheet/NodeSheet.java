@@ -4,6 +4,7 @@
 package miumg.edu.gt.nodesheet;
 
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 import miumg.edu.gt.nodesheet.View.Libro;
 import miumg.edu.gt.nodesheet.View.SplashScreen;
 import miumg.edu.gt.nodesheet.View.login;
@@ -15,6 +16,14 @@ import miumg.edu.gt.nodesheet.View.login;
 public class NodeSheet {
 
     public static void main(String[] args) {
+        
+        
+
+try {
+    UIManager.setLookAndFeel("com.jtattoo.plaf.acryl.AcrylLookAndFeel");
+} catch (Exception e) {
+    e.printStackTrace();
+}
         
        // crear ventana del splash
         JFrame splashFrame = new JFrame();
