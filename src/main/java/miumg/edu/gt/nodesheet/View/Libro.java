@@ -1,56 +1,138 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
+
 package miumg.edu.gt.nodesheet.View;
 
-/**
- *
- * @author joses
- */
+import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import miumg.edu.gt.nodesheet.Model.Celda;
+import miumg.edu.gt.nodesheet.Model.HojaCalculo;
+
+
 public class Libro extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Libro
-     */
+    HojaCalculo hoja1 = new HojaCalculo();
+HojaCalculo hoja2 = new HojaCalculo();
+HojaCalculo hoja3 = new HojaCalculo();
+
+boolean actualizando = false;
+
     public Libro() {
         initComponents();
-        numerarFilas();
-        jTable1.getColumnModel().getColumn(0).setMaxWidth(40);
-        jTable1.getColumnModel().getColumn(0).setMinWidth(40);
 
-        numerarFilas2();
-        jTable2.getColumnModel().getColumn(0).setMaxWidth(40);
-        jTable2.getColumnModel().getColumn(0).setMinWidth(40);
+        conectarTabla(jTable1, hoja1);
+        conectarTabla(jTable2, hoja2);
+        conectarTabla(jTable3, hoja3);
+
+        numerarFilas(jTable1);
+        numerarFilas(jTable2);
+        numerarFilas(jTable3);
+
+        configurarColumna(jTable1);
+        configurarColumna(jTable2);
+        configurarColumna(jTable3);
         
-        numerarFilas3();
-        jTable3.getColumnModel().getColumn(0).setMaxWidth(40);
-        jTable3.getColumnModel().getColumn(0).setMinWidth(40);
-
+        detectarSeleccion(jTable1, hoja1);
+detectarSeleccion(jTable2, hoja2);
+detectarSeleccion(jTable3, hoja3);
     }
 
-    private void numerarFilas() {
-
-        for (int i = 0; i < jTable1.getRowCount(); i++) {
-            jTable1.setValueAt(i + 1, i, 0);
+    private void numerarFilas(JTable tabla) {
+        for (int i = 0; i < tabla.getRowCount(); i++) {
+            tabla.setValueAt(i + 1, i, 0);
         }
-
     }
+private JTable obtenerTablaActual() {
+    int index = jTabbedPane1.getSelectedIndex();
+    if (index == 0) return jTable1;
+    if (index == 1) return jTable2;
+    return jTable3;
+}
+
+private HojaCalculo obtenerHojaActual() {
+    int index = jTabbedPane1.getSelectedIndex();
+    if (index == 0) return hoja1;
+    if (index == 1) return hoja2;
+    return hoja3;
+}
     
-    private void numerarFilas2() {
+    private void detectarSeleccion(JTable tabla, HojaCalculo hoja) {
+        
+        tabla.addMouseListener(new java.awt.event.MouseAdapter() {
+    public void mouseClicked(java.awt.event.MouseEvent evt) {
 
-        for (int i = 0; i < jTable2.getRowCount(); i++) {
-            jTable2.setValueAt(i + 1, i, 0);
-        }
+        int fila = tabla.getSelectedRow();
+        int columna = tabla.getSelectedColumn();
 
+        if (fila == -1 || columna == -1 || columna == 0) return;
+
+        Celda c = hoja.obtener(fila, columna);
+
+       if (c != null) {
+    txtFormulas.setText(c.formula);
+} else {
+    txtFormulas.setText("");
+}
     }
-    
-     private void numerarFilas3() {
+});
+    tabla.getSelectionModel().addListSelectionListener(e -> {
 
-        for (int i = 0; i < jTable3.getRowCount(); i++) {
-            jTable3.setValueAt(i + 1, i, 0);
+        int fila = tabla.getSelectedRow();
+        int columna = tabla.getSelectedColumn();
+
+        if (fila == -1 || columna == -1) return;
+        if (columna == 0) return;
+
+        Celda c = hoja.obtener(fila, columna);
+
+        if (c != null) {
+            txtFormulas.setText(c.valor);
+        } else {
+            txtFormulas.setText("");
         }
-     }
+    });
+}
+    private void configurarColumna(JTable tabla) {
+        tabla.getColumnModel().getColumn    (0).setMaxWidth(40);
+        tabla.getColumnModel().getColumn(0).setMinWidth(40);
+    }
+
+private void conectarTabla(JTable tabla, HojaCalculo hoja) {
+
+ tabla.getModel().addTableModelListener(new TableModelListener() {
+
+        @Override
+        public void tableChanged(TableModelEvent e) {
+
+            if (actualizando) return;
+
+            if (e.getType() != TableModelEvent.UPDATE) return;
+
+            int fila = e.getFirstRow();
+            int columna = e.getColumn();
+
+            if (fila < 0 || columna < 1) return;
+
+            Object valor = tabla.getValueAt(fila, columna);
+
+            try {
+                actualizando = true;
+
+                if (valor != null && !valor.toString().isEmpty()) {
+                    hoja.insertar(fila, columna, valor.toString());
+                } else {
+                    hoja.eliminar(fila, columna);
+                }
+
+                hoja.recalcularTodo(tabla);
+
+            } catch (Exception ex) {
+                tabla.setValueAt("ERROR", fila, columna);
+            } finally {
+                actualizando = false;
+            }
+        }
+    });
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -69,6 +151,8 @@ public class Libro extends javax.swing.JFrame {
         jTable2 = new javax.swing.JTable();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
+        txtFormulas = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         jInternalFrame1.setVisible(true);
 
@@ -281,6 +365,14 @@ public class Libro extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Hoja 3", jScrollPane3);
 
+        txtFormulas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtFormulasActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Formula:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -289,17 +381,61 @@ public class Libro extends javax.swing.JFrame {
                 .addContainerGap(15, Short.MAX_VALUE)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1525, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(91, 91, 91)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtFormulas, javax.swing.GroupLayout.PREFERRED_SIZE, 652, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(100, Short.MAX_VALUE)
+                .addGap(37, 37, 37)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtFormulas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 694, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void txtFormulasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFormulasActionPerformed
+    JTable tabla = obtenerTablaActual();
+    HojaCalculo hoja = obtenerHojaActual();
+
+    int fila = tabla.getSelectedRow();
+    int columna = tabla.getSelectedColumn();
+
+    if (fila == -1 || columna == -1 || columna == 0) return;
+
+    if (tabla.isEditing()) {
+        tabla.getCellEditor().stopCellEditing();
+    }
+
+    String valor = txtFormulas.getText();
+
+    actualizando = true;
+
+    try {
+
+        if (valor != null && !valor.isEmpty()) {
+            hoja.insertar(fila, columna, valor);
+        } else {
+            hoja.eliminar(fila, columna);
+        }
+
+        hoja.recalcularTodo(tabla);
+
+    } catch (Exception e) {
+        tabla.getModel().setValueAt("ERROR", fila, columna);
+    }
+
+    actualizando = false;
+    }//GEN-LAST:event_txtFormulasActionPerformed
 
     /**
      * @param args the command line arguments
@@ -338,6 +474,7 @@ public class Libro extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JInternalFrame jInternalFrame1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -345,5 +482,6 @@ public class Libro extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
     public javax.swing.JTable jTable3;
+    public javax.swing.JTextField txtFormulas;
     // End of variables declaration//GEN-END:variables
 }
