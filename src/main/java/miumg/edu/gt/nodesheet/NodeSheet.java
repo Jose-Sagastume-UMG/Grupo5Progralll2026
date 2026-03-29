@@ -16,7 +16,7 @@ import miumg.edu.gt.nodesheet.View.login;
 public class NodeSheet {
 
     public static void main(String[] args) {
-        
+       
         
 
 try {
@@ -28,7 +28,7 @@ try {
        // crear ventana del splash
         JFrame splashFrame = new JFrame();
 //        splashFrame.setUndecorated(true);
-        splashFrame.setSize(10000, 500);
+        splashFrame.setSize(1300, 500);
  splashFrame.setLocationRelativeTo(null);
 
         SplashScreen splash = new SplashScreen();
